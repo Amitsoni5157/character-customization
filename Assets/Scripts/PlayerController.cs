@@ -11,110 +11,93 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float groundCheckRadius = 0.2f;
     [SerializeField] Vector3 groundCheckOffset;
     [SerializeField] LayerMask groundLayer;
+
     bool isGrounded;
-
     float ySpeed;
-
-
-    [SerializeField]Animator animator;
-
     Quaternion targetRotation;
-
     CameraController cameraController;
     CharacterController characterController;
-    // Start is called before the first frame update
+    [SerializeField] Animator animator;
+
+    // Cache frequently accessed components
+    Transform cachedTransform;
+
     void Awake()
     {
         cameraController = Camera.main.GetComponent<CameraController>();
-        // animator = GetComponent<Animator>();
         characterController = GetComponent<CharacterController>();
+        cachedTransform = transform;
     }
 
-    // Update is called once per frame
     void Update()
     {
         Move();
-        if (Input.GetKeyDown("space"))
-        {
-            if (isGrounded)
-            {
-                StartCoroutine(JumpAnimation());
-            }
-        }
-        if(Input.GetKeyDown(KeyCode.LeftShift))
-        {
-            if(isGrounded)
-            {
-                CrouchAnimation(true);
-            }
-        }
-        else if(Input.GetKeyUp(KeyCode.LeftShift))
-        {
-            CrouchAnimation(false);
-        }
 
-        if (Input.GetKeyDown(KeyCode.F))
-        {
-            if (isGrounded)
-            {
-                SlideAnimation();
-            }
-        }/*
-        else if (Input.GetKeyUp("F"))
-        {
+        // Combined input checks
+        if (Input.GetKeyDown("space") && isGrounded)
+            StartCoroutine(JumpAnimation());
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && isGrounded)
+            CrouchAnimation(true);
+        else if (Input.GetKeyUp(KeyCode.LeftShift))
+            CrouchAnimation(false);
+
+        if (Input.GetKeyDown(KeyCode.F) && isGrounded)
             SlideAnimation();
-        }*/
     }
 
+    /// <summary>
+    /// Character Movement Code Here through WASD and arrow key
+    /// </summary>
     private void Move()
     {
-        WalkAnimation(true);
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
         float moveAmount = Mathf.Clamp01(Mathf.Abs(horizontalInput) + Mathf.Abs(verticalInput));
 
-        Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput).normalized * moveSpeed * Time.deltaTime;
+        Vector3 movement = new Vector3(horizontalInput, 0f, verticalInput).normalized * moveSpeed * Time.fixedDeltaTime;
 
         var moveDir = cameraController.PlanarRotation * movement;
 
-        GroundCheck();
-        Debug.Log("IsGrounded = "+isGrounded);
-        if(isGrounded)
+        // Using CharacterController's isGrounded
+        isGrounded = characterController.isGrounded;
+        if (isGrounded)
         {
             ySpeed = -0.5f;
         }
         else
         {
-            ySpeed += Physics.gravity.y * Time.deltaTime;
+            ySpeed += Physics.gravity.y * Time.fixedDeltaTime;
         }
         var velocity = moveDir * moveSpeed;
         velocity.y = ySpeed;
 
-        characterController.Move(velocity * Time.deltaTime);
+        characterController.Move(velocity * Time.fixedDeltaTime);
 
-        if (moveAmount > 0) {            
+        if (moveAmount > 0)
+        {
             targetRotation = Quaternion.LookRotation(moveDir);
+            // Only update rotation when there's actual movement
+            cachedTransform.rotation = Quaternion.RotateTowards(cachedTransform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
 
-         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        animator.SetFloat("moveamount", moveAmount, 0.2f, Time.deltaTime);
 
-        animator.SetFloat("moveamount", moveAmount, 0.2f, Time.deltaTime);        
     }
 
-    void GroundCheck()
+    /// <summary>
+    /// For Slide Animation
+    /// </summary>
+    void SlideAnimation()
     {
-        isGrounded = Physics.CheckSphere(transform.TransformPoint(groundCheckOffset),groundCheckRadius,groundLayer);
+        animator.SetTrigger("isSlide");
     }
 
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = new Color(0,1,0,0.5f);
-        Gizmos.DrawSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius);
-    }
-
-
+    /// <summary>
+    /// For Jump Animation
+    /// </summary>
+    /// <returns></returns>
     IEnumerator JumpAnimation()
     {
         animator.SetBool("isJump", true);
@@ -122,18 +105,14 @@ public class PlayerController : MonoBehaviour
         animator.SetBool("isJump", false);
     }
 
+    /// <summary>
+    /// For Crouch Animation
+    /// </summary>
+    /// <param name="isValue"></param>
     void CrouchAnimation(bool isValue)
     {
-        animator.SetBool("isCrouch",isValue);        
+        animator.SetBool("isCrouch", isValue);
     }
 
-    void SlideAnimation()
-    {
-        animator.SetTrigger("isSlide");
-    }
 
-    void WalkAnimation(bool isValue)
-    {
-        animator.SetBool("isWalk", isValue);
-    }
 }

@@ -5,21 +5,16 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [SerializeField] Transform followTarget;
-
     [SerializeField] float rotationSpeed = 2f;
     [SerializeField] float distance = 3;
-
     [SerializeField] float minVerticalAngle = -45;
     [SerializeField] float maxVerticalAngle = 45;
-
     [SerializeField] Vector2 framingOffset;
-
     [SerializeField] bool invertX;
     [SerializeField] bool invertY;
 
     float rotationX;
     float rotationY;
-
     float invertXVal;
     float invertYVal;
 
