@@ -34,6 +34,24 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         Move();
+        if (Input.GetKeyDown("space"))
+        {
+            if (isGrounded)
+            {
+                StartCoroutine(JumpAnimation());
+            }
+        }
+        if(Input.GetKeyDown(KeyCode.LeftShift))
+        {
+            if(isGrounded)
+            {
+                CrouchAnimation(true);
+            }
+        }
+        else if(Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            CrouchAnimation(false);
+        }
     }
 
     private void Move()
@@ -68,16 +86,31 @@ public class PlayerController : MonoBehaviour
 
          transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-        animator.SetFloat("moveamount", moveAmount,0.2f,Time.deltaTime);        
+        animator.SetFloat("moveamount", moveAmount, 0.2f, Time.deltaTime);        
     }
 
     void GroundCheck()
     {
         isGrounded = Physics.CheckSphere(transform.TransformPoint(groundCheckOffset),groundCheckRadius,groundLayer);
     }
+
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(0,1,0,0.5f);
         Gizmos.DrawSphere(transform.TransformPoint(groundCheckOffset), groundCheckRadius);
+    }
+
+
+    IEnumerator JumpAnimation()
+    {
+        animator.SetBool("isJump", true);
+        yield return new WaitForSeconds(1);
+        animator.SetBool("isJump", false);
+    }
+
+    void CrouchAnimation(bool isValue)
+    {
+        animator.SetBool("isCrouch",isValue);        
     }
 }
