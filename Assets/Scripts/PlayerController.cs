@@ -52,10 +52,23 @@ public class PlayerController : MonoBehaviour
         {
             CrouchAnimation(false);
         }
+
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            if (isGrounded)
+            {
+                SlideAnimation();
+            }
+        }/*
+        else if (Input.GetKeyUp("F"))
+        {
+            SlideAnimation();
+        }*/
     }
 
     private void Move()
     {
+        WalkAnimation(true);
         float horizontalInput = Input.GetAxis("Horizontal");
         float verticalInput = Input.GetAxis("Vertical");
 
@@ -112,5 +125,15 @@ public class PlayerController : MonoBehaviour
     void CrouchAnimation(bool isValue)
     {
         animator.SetBool("isCrouch",isValue);        
+    }
+
+    void SlideAnimation()
+    {
+        animator.SetTrigger("isSlide");
+    }
+
+    void WalkAnimation(bool isValue)
+    {
+        animator.SetBool("isWalk", isValue);
     }
 }
