@@ -35,11 +35,11 @@ public class CameraController : MonoBehaviour
         invertXVal = (invertX) ? -1 : 1;
         invertYVal = (invertY) ? -1 : 1;
 
-        rotationX += Input.GetAxis("Mouse Y") * invertYVal * rotationSpeed;//For vertical rotation
+        rotationX += Input.GetAxis("Camera Y") * invertYVal * rotationSpeed;//For vertical rotation
 
         rotationX = Mathf.Clamp(rotationX, minVerticalAngle,maxVerticalAngle);
 
-        rotationY += Input.GetAxis("Mouse X") * invertXVal * rotationSpeed;//For horizontal rotation
+        rotationY += Input.GetAxis("Camera X") * invertXVal * rotationSpeed;//For horizontal rotation
 
         var targetRotation = Quaternion.Euler(rotationX, rotationY, 0);
 
